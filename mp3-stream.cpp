@@ -110,6 +110,9 @@ bool MP3Stream::load(std::string filename)
     if(channel != -1)
         blit::channels[channel].off();
 
+    currentSample = nullptr;
+    bufferedSamples = 0;
+
     if(!audioFile.open(filename))
         return false;
 
@@ -206,6 +209,7 @@ void MP3Stream::play(int channel)
 
         currentSample = audioBuf[0];
         endSample = currentSample + dataSize[0];
+        blit::channels[channel].wave_buf_pos = 0;
     }
 
     blit::channels[channel].waveforms = blit::Waveform::WAVE;
