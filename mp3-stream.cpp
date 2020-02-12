@@ -112,6 +112,7 @@ bool MP3Stream::load(std::string filename)
 
     currentSample = nullptr;
     bufferedSamples = 0;
+    needConvert = false;
 
     if(!audioFile.open(filename))
         return false;
