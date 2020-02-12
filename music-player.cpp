@@ -86,6 +86,9 @@ void render(uint32_t time_ms)
     auto &tags = mp3Stream.getTags();
     std::string info;
 
+    if(!mp3Stream.getFileSupported())
+        info += "Warning: unsupported file!\n\n";
+
     if(!tags.artist.empty())
         info += tags.artist + "\n";
 
@@ -104,7 +107,11 @@ void render(uint32_t time_ms)
     blit::screen.pen = blit::Pen(0, 0, 0);
     blit::screen.rectangle(blit::Rect(5, centerH - 5, blit::screen.bounds.w - 10, 10));
 
-    blit::screen.pen = blit::Pen(255, 255, 255);
+    if(!mp3Stream.getFileSupported())
+        blit::screen.pen = blit::Pen(255, 0, 0);
+    else
+        blit::screen.pen = blit::Pen(255, 255, 255);
+
     blit::screen.rectangle(blit::Rect(5, centerH - 5, w, 10));
 
     // time

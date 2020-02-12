@@ -33,6 +33,8 @@ public:
 
     const Tags &getTags() const;
 
+    bool getFileSupported() const;
+
 private:
     void decode(int bufIndex);
     int calcDuration(std::string filename);
@@ -57,4 +59,6 @@ private:
     int durationMs = 0;
 
     Tags tags;
+
+    bool supported = true;
 };

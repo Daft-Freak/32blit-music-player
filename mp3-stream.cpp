@@ -113,6 +113,7 @@ bool MP3Stream::load(std::string filename)
     currentSample = nullptr;
     bufferedSamples = 0;
     needConvert = false;
+    supported = true;
 
     if(!audioFile.open(filename))
         return false;
@@ -261,6 +262,11 @@ const MP3Stream::Tags &MP3Stream::getTags() const
     return tags;
 }
 
+bool MP3Stream::getFileSupported() const
+{
+    return supported;
+}
+
 void MP3Stream::decode(int bufIndex)
 {
 #ifdef PROFILER
@@ -318,6 +324,8 @@ void MP3Stream::decode(int bufIndex)
         {
             needConvert = true;
             decode(bufIndex);
+
+            supported = info.hz % 22050 == 0;
             return;
         }
     
