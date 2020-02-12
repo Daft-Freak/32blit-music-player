@@ -148,6 +148,8 @@ void FileBrowser::updateList()
     files = blit::list_files(curDir);
     selectedFile = 0;
 
+    std::sort(files.begin(), files.end(), [](blit::FileInfo &a, blit::FileInfo & b){return a.name < b.name;});
+
     if(fileExts.empty())
         return;
 
