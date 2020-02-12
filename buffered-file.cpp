@@ -19,6 +19,9 @@ bool BufferedFile::open(std::string filename)
 {
     bufferFilled = 0;
 
+    if(file >= 0)
+        blit::close_file(file);
+
     file = blit::open_file(filename);
 
     if(file < 0)
