@@ -99,6 +99,116 @@ static std::string readTextTag(int32_t file, uint32_t offset, int32_t len)
     return readString(file, offset + 1, encoding, len);
 }
 
+//giant hack
+#include "stm32h7xx_hal_mdma.h"
+#include "stm32h7xx_hal_jpeg.h"
+//
+
+struct JPEGImage {
+    uint32_t width, height;
+    uint8_t *data;
+};
+
+static JPEG_HandleTypeDef jpeg_handle;
+static uint8_t *jpeg_in_buf = nullptr, *jpeg_out_buf = nullptr;
+static uint32_t jpeg_in_len = 0, jpeg_in_off = 0;
+static uint32_t jpeg_out_len = 0, jpeg_out_off = 0;
+
+void HAL_JPEG_InfoReadyCallback(JPEG_HandleTypeDef *hjpeg, JPEG_ConfTypeDef *pInfo) {  
+    printf("InfoReadyCallback %i %i %i %i %i\n", pInfo->ImageWidth, pInfo->ImageHeight, pInfo->ImageQuality, pInfo->ColorSpace, pInfo->ChromaSubsampling);
+}
+
+void HAL_JPEG_GetDataCallback(JPEG_HandleTypeDef *hjpeg, uint32_t NbDecodedData) {
+    printf("GetDataCallback %u %u %u\n", NbDecodedData, jpeg_in_off, jpeg_in_len);
+    jpeg_in_off += NbDecodedData;
+
+    if(jpeg_in_off < jpeg_in_len)
+        HAL_JPEG_ConfigInputBuffer(&jpeg_handle, jpeg_in_buf + jpeg_in_off, jpeg_in_len - jpeg_in_off);  
+}
+
+void HAL_JPEG_DataReadyCallback (JPEG_HandleTypeDef *hjpeg, uint8_t *pDataOut, uint32_t OutDataLength) {
+    printf("DataReadyCallback %u %u %u\n", OutDataLength, jpeg_out_off, jpeg_out_len);
+
+    jpeg_out_off += OutDataLength;
+
+    if(jpeg_out_off == jpeg_out_len) {
+        auto new_buf = new uint8_t[jpeg_out_len + 1024];
+        memcpy(new_buf, jpeg_out_buf, jpeg_out_len);
+        delete[] jpeg_out_buf;
+        jpeg_out_buf = new_buf;
+        jpeg_out_len += 1024;
+    }
+
+    HAL_JPEG_ConfigOutputBuffer(&jpeg_handle, jpeg_out_buf + jpeg_out_off, jpeg_out_len - jpeg_out_off);
+}
+
+JPEGImage decode_jpeg_buf(uint8_t *ptr, uint32_t len)
+{
+    jpeg_in_buf = ptr;
+    jpeg_in_len = len;
+    jpeg_in_off = 0;
+
+    jpeg_handle.Instance = JPEG;
+    HAL_JPEG_Init(&jpeg_handle);
+
+    jpeg_out_len = 1024;
+    jpeg_out_buf = new uint8_t[jpeg_out_len];
+    jpeg_out_off = 0;
+
+    auto status = HAL_JPEG_Decode(&jpeg_handle, ptr, len, jpeg_out_buf, jpeg_out_len, 0xFFFFFFFF);
+
+    JPEG_ConfTypeDef conf;
+    HAL_JPEG_GetInfo(&jpeg_handle, &conf);
+
+    printf("%i %i %i %i\n", conf.ImageWidth, conf.ImageHeight, conf.ImageQuality, conf.ColorSpace);
+
+    HAL_JPEG_DeInit(&jpeg_handle);
+
+    return {conf.ImageWidth, conf.ImageHeight, jpeg_out_buf};
+}
+
+static void decodeAPIC(int32_t file, uint32_t offset, uint32_t len)
+{
+    auto frameOffset = offset;
+    char encoding;
+    blit::read_file(file, offset++, 1, &encoding);
+
+    std::string mime;
+    char c;
+    blit::read_file(file, offset++, 1, &c);
+
+    while(c)
+    {
+        mime += c;
+        blit::read_file(file, offset++, 1, &c);
+    }
+
+    char picType;
+    blit::read_file(file, offset++, 1, &picType);
+
+    auto desc = readString(file, offset, encoding, -1);
+    int descLen = desc.length() + 1;
+
+    if(encoding == 1) // wide chars
+        descLen = (descLen + 1) * 2;
+
+    offset += descLen;
+
+    printf("pic %i mime %s desc %s\n", picType, mime.c_str(), desc.c_str());
+
+    if(mime != "image/jpeg")
+        return;
+
+    auto picLen = len - (offset - frameOffset);
+    char *picData = new char[picLen];
+    blit::read_file(file, offset, picLen, picData);
+
+    //
+    decode_jpeg_buf((uint8_t *)picData, picLen);
+
+    delete[] picData;
+}
+
 MP3Stream::MP3Stream()
 {
 
@@ -186,6 +296,8 @@ MP3Stream::Tags MP3Stream::parseTags(std::string filename)
             ret.artist = readTextTag(file, offset, frameSize);
         else if(id == "TRCK")
             ret.track = readTextTag(file, offset, frameSize);
+        else if(id == "APIC")
+            decodeAPIC(file, offset, frameSize);
         else
             printf("\t%s size %" PRIu32 " flags %x %x @%" PRIx32 "\n", id.c_str(), frameSize, buf[8], buf[9], offset);
 
