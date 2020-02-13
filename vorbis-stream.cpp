@@ -110,7 +110,7 @@ bool VorbisStream::load(std::string filename)
     lastOutputSamples = 0;
 
     // comments/tags
-    tags = Tags();
+    tags = MusicTags();
 
     auto comments = stb_vorbis_get_comment(vorbis);
 
@@ -140,9 +140,9 @@ bool VorbisStream::load(std::string filename)
     return true;
 }
 
-/*VorbisStream::Tags VorbisStream::parseTags(std::string filename)
+/*MusicTags VorbisStream::parseTags(std::string filename)
 {
-    Tags ret;
+    MusicTags ret;
 
     auto file = blit::open_file(filename);
 
@@ -219,7 +219,7 @@ int VorbisStream::getDurationMs() const
     return durationMs;
 }
 
-const VorbisStream::Tags &VorbisStream::getTags() const
+const MusicTags &VorbisStream::getTags() const
 {
     return tags;
 }

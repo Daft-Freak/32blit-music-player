@@ -3,24 +3,20 @@
 #include <string>
 
 #include "buffered-file.hpp"
+#include "music-tags.hpp"
 
 struct stb_vorbis;
 
 class VorbisStream final
 {
 public:
-    struct Tags
-    {
-        std::string album, artist, title, track;
-        //...
-    };
 
     VorbisStream();
     ~VorbisStream();
 
     bool load(std::string filename);
 
-    //Tags parseTags(std::string filename);
+    //MusicTags parseTags(std::string filename);
 
     void play(int channel);
     void pause();
@@ -32,7 +28,7 @@ public:
     int getCurrentSample() const;
     int getDurationMs() const;
 
-    const Tags &getTags() const;
+    const MusicTags &getTags() const;
 
     bool getFileSupported() const;
 
@@ -62,7 +58,7 @@ private:
     int bufferedSamples = 0;
     int durationMs = 0;
 
-    Tags tags;
+    MusicTags tags;
 
     bool supported = true;
 };

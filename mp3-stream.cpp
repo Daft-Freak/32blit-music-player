@@ -129,9 +129,9 @@ bool MP3Stream::load(std::string filename)
     return true;
 }
 
-MP3Stream::Tags MP3Stream::parseTags(std::string filename)
+MusicTags MP3Stream::parseTags(std::string filename)
 {
-    Tags ret;
+    MusicTags ret;
 
     auto file = blit::open_file(filename);
 
@@ -257,7 +257,7 @@ int MP3Stream::getDurationMs() const
     return durationMs;
 }
 
-const MP3Stream::Tags &MP3Stream::getTags() const
+const MusicTags &MP3Stream::getTags() const
 {
     return tags;
 }

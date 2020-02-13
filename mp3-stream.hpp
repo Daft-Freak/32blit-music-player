@@ -5,21 +5,16 @@
 #include "minimp3.h"
 
 #include "buffered-file.hpp"
+#include "music-tags.hpp"
 
 class MP3Stream final
 {
 public:
-    struct Tags
-    {
-        std::string album, artist, title, track;
-        //...
-    };
-
     MP3Stream();
 
     bool load(std::string filename);
 
-    Tags parseTags(std::string filename);
+    MusicTags parseTags(std::string filename);
 
     void play(int channel);
     void pause();
@@ -31,7 +26,7 @@ public:
     int getCurrentSample() const;
     int getDurationMs() const;
 
-    const Tags &getTags() const;
+    const MusicTags &getTags() const;
 
     bool getFileSupported() const;
 
@@ -58,7 +53,7 @@ private:
     int bufferedSamples = 0;
     int durationMs = 0;
 
-    Tags tags;
+    MusicTags tags;
 
     bool supported = true;
 };
