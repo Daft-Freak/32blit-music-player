@@ -60,7 +60,7 @@ void formatTime(int timeMs, char *buf, int bufLen)
 void render(uint32_t time_ms)
 {
     blit::screen.alpha = 0xFF;
-    blit::screen.pen = blit::Pen(20, 30, 40, 100);
+    blit::screen.pen = blit::Pen(20, 30, 40);
     blit::screen.clear();
 
 #ifdef PROFILER
