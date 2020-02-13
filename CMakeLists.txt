@@ -13,4 +13,5 @@ blit_executable(music-player
     file-browser.cpp
     mp3-stream.cpp
     music-player.cpp
+    vorbis-stream.cpp
 )
