@@ -209,6 +209,7 @@ void MP3Stream::play(int channel)
         decode(0);
         decode(1);
 
+        curAudioBuf = 0;
         currentSample = audioBuf[0];
         endSample = currentSample + dataSize[0];
         blit::channels[channel].wave_buf_pos = 0;
