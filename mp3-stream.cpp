@@ -30,74 +30,73 @@ static uint32_t getInt32(char *buf)
     return ubuf[3] | (ubuf[2] << 8) | (ubuf[1] << 16) | (ubuf[0] << 24);
 }
 
-static std::string readTextTag(int32_t file, uint32_t offset, uint32_t len)
+static std::string readString(int32_t file, uint32_t offset, char encoding, int32_t len)
 {
-    char encoding;
-    blit::read_file(file, offset, 1, &encoding);
     std::string ret;
 
     if(encoding == 0)
     {
         // ISO-8859-1
-        ret.resize(len - 1);
+        char c;
+        blit::read_file(file, offset++, 1, &c);
 
-        std::vector<char> tmp(len - 1);
-        blit::read_file(file, offset + 1, len - 1, tmp.data());
-
-        // "convert" by throwing away anything non-ascii
-        int i = 0;
-        for(auto c : tmp)
+        for(int i = 1; i < len || (len == -1 && c); i++)
         {
+            // "convert" by throwing away anything non-ascii
             if((c & 0x80) == 0)
-                ret[i++] = c;
+                ret += c;
+            blit::read_file(file, offset++, 1, &c);
         }
-
-        ret.resize(i);
     }
     else if(encoding == 1)
     {
         // UCS-2
-        ret.resize(len - 3);
-
         uint16_t bom;
-        std::vector<uint16_t> uChars((len - 3) / 2);
-        blit::read_file(file, offset + 1, 2, reinterpret_cast<char *>(&bom));
-        blit::read_file(file, offset + 3, len - 3, reinterpret_cast<char *>(uChars.data()));
+        blit::read_file(file, offset, 2, reinterpret_cast<char *>(&bom));
+        offset += 2;
 
-        // "convert" by throwing away anything non-ascii
-        int i = 0;
-        for(auto c : uChars)
+        uint16_t c;
+        blit::read_file(file, offset, 2, reinterpret_cast<char *>(&c));
+        offset += 2;
+
+        for(int i = 1; i < (len - 2) / 2 || (len == -1 && c); i++)
         {
+            // "convert" by throwing away anything non-ascii
             if(bom == 0xFEFF && c < 0x80)
-                ret[i++] = c;
+                ret += c;
             else if((c >> 8) < 0x80)
-                ret[i++] = c >> 8;
-        }
+                ret += (c >> 8);
 
-        ret.resize(i);
+            blit::read_file(file, offset, 2, reinterpret_cast<char *>(&c));
+            offset += 2;
+        }
     }
     else if(encoding == 3)
     {
         // UTF-8
-        ret.resize(len - 1);
+        char c;
+        blit::read_file(file, offset++, 1, &c);
 
-        std::vector<char> tmp(len - 1);
-        blit::read_file(file, offset + 1, len - 1, tmp.data());
-
-        // "convert" by throwing away anything non-ascii
-        int i = 0;
-        for(auto c : tmp)
+        for(int i = 1; i < len || (len == -1 && c); i++)
         {
+            // "convert" by throwing away anything non-ascii
             if((c & 0x80) == 0)
-                ret[i++] = c;
+                ret += c;
+            blit::read_file(file, offset++, 1, &c);
         }
-
-        ret.resize(i);
     }
     else
         ret = "enc? " + std::to_string(encoding);
 
     return ret;
+}
+
+static std::string readTextTag(int32_t file, uint32_t offset, int32_t len)
+{
+    char encoding;
+    blit::read_file(file, offset, 1, &encoding);
+
+    return readString(file, offset + 1, encoding, len);
 }
 
 MP3Stream::MP3Stream()
