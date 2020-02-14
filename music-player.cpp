@@ -2,6 +2,7 @@
 
 #include "file-browser.hpp"
 #include "mp3-stream.hpp"
+#include "vorbis-stream.hpp"
 
 #ifdef PROFILER
 #include "engine/profiler.hpp"
@@ -14,6 +15,9 @@ blit::ProfilerProbe *profilerDecProbe;
 #endif
 
 MP3Stream mp3Stream;
+VorbisStream vorbisStream;
+MusicStream *musicStream;
+
 FileBrowser fileBrowser;
 std::string fileToLoad;
 bool renderedLoadMessage = false;
@@ -46,7 +50,7 @@ void init()
     profilerDecProbe = profiler.AddProbe("Decode", 300);
 #endif
 
-    fileBrowser.setExtensions({".mp3"});
+    fileBrowser.setExtensions({".mp3", ".ogg", ".oga"});
     fileBrowser.setDisplayRect(blit::Rect(5, 5, blit::screen.bounds.w - 10, blit::screen.bounds.h / 2 - 10));
     fileBrowser.setOnFileOpen(openMP3);
     fileBrowser.init();
@@ -76,17 +80,22 @@ void render(uint32_t time_ms)
         return;
     }
 
-    int sampleOffset = mp3Stream.getCurrentSample();
-    int durationMs = mp3Stream.getDurationMs();
+    fileBrowser.render();
+
+    if(!musicStream)
+        return;
+
+    int sampleOffset = musicStream->getCurrentSample();
+    int durationMs = musicStream->getDurationMs();
 
     //float time = sampleOffset / 22050.0f;
     int time = (static_cast<uint64_t>(sampleOffset) * 1000) / 22050;
 
     // format tag info
-    auto &tags = mp3Stream.getTags();
+    auto &tags = musicStream->getTags();
     std::string info;
 
-    if(!mp3Stream.getFileSupported())
+    if(!musicStream->getFileSupported())
         info += "Warning: unsupported file!\n\n";
 
     if(!tags.artist.empty())
@@ -107,7 +116,7 @@ void render(uint32_t time_ms)
     blit::screen.pen = blit::Pen(0, 0, 0);
     blit::screen.rectangle(blit::Rect(5, centerH - 5, blit::screen.bounds.w - 10, 10));
 
-    if(!mp3Stream.getFileSupported())
+    if(!musicStream->getFileSupported())
         blit::screen.pen = blit::Pen(255, 0, 0);
     else
         blit::screen.pen = blit::Pen(255, 255, 255);
@@ -146,21 +155,32 @@ void update(uint32_t time_ms)
     // load file
     if(!fileToLoad.empty() && renderedLoadMessage)
     {
-        if(mp3Stream.load(fileToLoad))
-            mp3Stream.play(0);
+        auto ext = fileToLoad.substr(fileToLoad.find_last_of('.'));
+        std::for_each(ext.begin(), ext.end(), [](char & c) {c = tolower(c);});
+
+        if(ext == ".mp3" && mp3Stream.load(fileToLoad))
+            musicStream = &mp3Stream;
+        else if((ext == ".ogg" || ext == ".oga") && vorbisStream.load(fileToLoad))
+            musicStream = &vorbisStream;
+        else
+            musicStream = nullptr;
+
+        if(musicStream)
+            musicStream->play(0);
 
         fileToLoad = "";
     }
 
-    mp3Stream.update();
+    if(musicStream)
+        musicStream->update();
 
     // x released
-    if((lastButtonState & blit::Button::X) && !(blit::buttons & blit::Button::X))
+    if(musicStream && (lastButtonState & blit::Button::X) && !(blit::buttons & blit::Button::X))
     {
-        if(mp3Stream.getPlaying())
-            mp3Stream.pause();
+        if(musicStream->getPlaying())
+            musicStream->pause();
         else
-            mp3Stream.play(0);
+            musicStream->play(0);
     }
 
     lastButtonState = blit::buttons;
