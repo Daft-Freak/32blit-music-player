@@ -3,11 +3,12 @@
 #include <string>
 
 #include "buffered-file.hpp"
+#include "music-stream.hpp"
 #include "music-tags.hpp"
 
 struct stb_vorbis;
 
-class VorbisStream final
+class VorbisStream final : public MusicStream
 {
 public:
 

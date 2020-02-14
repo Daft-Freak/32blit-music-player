@@ -5,9 +5,10 @@
 #include "minimp3.h"
 
 #include "buffered-file.hpp"
+#include "music-stream.hpp"
 #include "music-tags.hpp"
 
-class MP3Stream final
+class MP3Stream final : public MusicStream
 {
 public:
     MP3Stream();
