@@ -386,7 +386,7 @@ void VorbisStream::callback()
 
 uint64_t VorbisStream::calcDuration(std::string filename)
 {
-    // scan through the file backwards to file the sample pos of the last page
+    // scan through the file backwards to find the sample pos of the last page
 
     auto file = blit::open_file(filename);
     if(file == -1)
