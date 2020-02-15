@@ -101,7 +101,7 @@ bool VorbisStream::load(std::string filename)
     channels = info.channels;
     sampleRate = info.sample_rate;
 
-    needConvert = channels != 1 || sampleRate != 22050;
+    needConvert = sampleRate != 22050;
     supported = sampleRate % 22050 == 0;
 
     durationMs = (durationSamples * 1000) / sampleRate;
