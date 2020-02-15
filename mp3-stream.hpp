@@ -2,6 +2,7 @@
 
 #include <string>
 
+#define MINIMP3_ONLY_MP3
 #include "minimp3.h"
 
 #include "buffered-file.hpp"

@@ -1,7 +1,6 @@
 #include <cinttypes>
 
 #define MINIMP3_IMPLEMENTATION
-#define MINIMP3_ONLY_MP3
 
 #include "mp3-stream.hpp"
 
