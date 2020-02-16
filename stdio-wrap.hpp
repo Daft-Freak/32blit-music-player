@@ -10,6 +10,9 @@ struct wrap_FILE
 {
     int32_t file;
     uint32_t offset;
+
+    uint8_t getc_buffer[512];
+    int getc_buf_len, getc_buf_off;
 };
 
 inline wrap_FILE *wrap_fopen(const char *filename, const char *mode)
@@ -18,6 +21,8 @@ inline wrap_FILE *wrap_fopen(const char *filename, const char *mode)
 
     ret->file = blit::open_file(filename);
     ret->offset = 0;
+
+    ret->getc_buf_len = ret->getc_buf_off = 0;
 
     if(ret->file == -1)
         return nullptr;
@@ -32,6 +37,13 @@ inline int wrap_fclose(wrap_FILE *file)
 
 inline size_t wrap_fread(void *buffer, size_t size, size_t count, wrap_FILE *file)
 {
+    // invalidate getc buffer
+    if(file->getc_buf_len)
+    {
+        file->offset += file->getc_buf_off;
+        file->getc_buf_off = file->getc_buf_len = 0;
+    }
+
     auto ret = blit::read_file(file->file, file->offset, size * count, (char *)buffer);
     file->offset += ret;
 
@@ -40,20 +52,29 @@ inline size_t wrap_fread(void *buffer, size_t size, size_t count, wrap_FILE *fil
 
 inline int wrap_fgetc(wrap_FILE *file)
 {
-    char ret;
-    auto read = blit::read_file(file->file, file->offset, 1, &ret);
-
-    if(read)
+    // refill getc buffer
+    if(file->getc_buf_off >= file->getc_buf_len)
     {
-        file->offset++;
-        return (uint8_t)ret;
+        file->offset += file->getc_buf_off;
+        file->getc_buf_len = blit::read_file(file->file, file->offset, 512, (char*)file->getc_buffer);
+        file->getc_buf_off = 0;
     }
+
+    if(file->getc_buf_len)
+        return file->getc_buffer[file->getc_buf_off++];
 
     return EOF;
 }
 
 inline int wrap_fseek(wrap_FILE *file, long offset, int origin)
 {
+    // invalidate getc buffer
+    if(file->getc_buf_len)
+    {
+        file->offset += file->getc_buf_off;
+        file->getc_buf_off = file->getc_buf_len = 0;
+    }
+
     if(origin == SEEK_SET)
         file->offset = offset;
     else if(origin == SEEK_CUR)
@@ -66,7 +87,7 @@ inline int wrap_fseek(wrap_FILE *file, long offset, int origin)
 
 inline long wrap_ftell(wrap_FILE *file)
 {
-    return file->offset;
+    return file->offset + file->getc_buf_off;
 }
 
 #define FILE wrap_FILE
