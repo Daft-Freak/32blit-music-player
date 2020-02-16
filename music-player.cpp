@@ -52,7 +52,7 @@ void init()
 #endif
 
     fileBrowser.setExtensions({".mp3", ".ogg", ".oga"});
-    fileBrowser.setDisplayRect(blit::Rect(5, 5, blit::screen.bounds.w - 10, blit::screen.bounds.h / 2 - 10));
+    fileBrowser.setDisplayRect(blit::Rect(5, 5, blit::screen.bounds.w - 10, blit::screen.bounds.h / 2 + 15));
     fileBrowser.setOnFileOpen(openMP3);
     fileBrowser.init();
 }
