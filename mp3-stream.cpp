@@ -280,11 +280,7 @@ void MP3Stream::decode(int bufIndex)
     do
     {
         if(audioFile.getBufferFilled() == 0)
-        {
-            //printf("end %i\n", read);
-            currentSample = nullptr;
             break;
-        }
 
 #ifdef PROFILER
         profilerDecProbe->Start();
@@ -346,6 +342,12 @@ void MP3Stream::decode(int bufIndex)
     profilerDecProbe->StoreElapsedUs();
 #endif
 
+    if(!samples)
+    {
+        dataSize[bufIndex] = -1;
+        return;
+    }
+
     dataSize[bufIndex] = samples;
 }
 
@@ -389,11 +391,16 @@ void MP3Stream::callback()
     {
         dataSize[curAudioBuf] = 0;
         curAudioBuf = ++curAudioBuf % 2;
-        currentSample = audioBuf[curAudioBuf];
-        endSample = currentSample + dataSize[curAudioBuf];
 
-        if(currentSample == endSample)
-            blit::debug("underrun!\n");
+        if(dataSize[curAudioBuf] == -1) // EOF
+            currentSample = endSample = nullptr;
+        else
+        {
+            currentSample = audioBuf[curAudioBuf];
+            endSample = currentSample + dataSize[curAudioBuf];
+            if(currentSample == endSample)
+                blit::debug("underrun!\n");
+        }
     }
 
     //for(; i < 64 && currentSample != endSample; i++)

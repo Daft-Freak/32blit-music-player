@@ -226,7 +226,10 @@ void VorbisStream::decode(int bufIndex)
     }
 
     if(!samples)
-        currentSample = nullptr;
+    {
+        dataSize[bufIndex] = -1;
+        return;
+    }
 
     // pad samples, should only happen at the end of the file
     while(samples % 64)
@@ -274,11 +277,16 @@ void VorbisStream::callback()
     {
         dataSize[curAudioBuf] = 0;
         curAudioBuf = ++curAudioBuf % 2;
-        currentSample = audioBuf[curAudioBuf];
-        endSample = currentSample + dataSize[curAudioBuf];
 
-        if(currentSample == endSample)
-            blit::debug("underrun!\n");
+        if(dataSize[curAudioBuf] == -1) // EOF
+            currentSample = endSample = nullptr;
+        else
+        {
+            currentSample = audioBuf[curAudioBuf];
+            endSample = currentSample + dataSize[curAudioBuf];
+            if(currentSample == endSample)
+                blit::debug("underrun!\n");
+        }
     }
 
     bufferedSamples += 64;
