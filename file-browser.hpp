@@ -27,6 +27,7 @@ private:
     void updateList();
 
     static const int itemHeight = 10;
+    static const int itemPadding = 2; // x padding
 
     std::vector<blit::FileInfo> files;
     int selectedFile = 0;

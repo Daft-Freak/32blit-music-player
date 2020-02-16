@@ -55,7 +55,7 @@ void FileBrowser::render()
 
         auto str = f.name + ((f.flags & blit::FileFlags::directory) ? "/" : "");
 
-        blit::Rect r(displayRect.x, displayRect.y + yOff +  y, displayRect.w, itemHeight);
+        blit::Rect r(displayRect.x, displayRect.y + yOff + y, displayRect.w, itemHeight);
         blit::Rect clipped = r.intersection(displayRect);
 
         blit::screen.rectangle(clipped);
@@ -66,6 +66,9 @@ void FileBrowser::render()
             blit::screen.pen = blit::Pen(0xF7, 0xF7, 0xF7);
 
         r.h ++;
+
+        r.x += itemPadding;
+        r.w -= itemPadding * 2;
 
         blit::screen.text(str, blit::minimal_font, r, true, blit::TextAlign::center_left, clipped);
 
