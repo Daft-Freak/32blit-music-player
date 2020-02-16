@@ -1,6 +1,7 @@
 #include "music-player.hpp"
 
 #include "file-browser.hpp"
+#include "fonts.hpp"
 #include "mp3-stream.hpp"
 #include "vorbis-stream.hpp"
 
@@ -96,7 +97,7 @@ void render(uint32_t time_ms)
     std::string info;
 
     if(!musicStream->getFileSupported())
-        info += "Warning: unsupported file!\n\n";
+        info += "WARNING: unsupported file!\n\n";
 
     if(!tags.artist.empty())
         info += tags.artist + "\n";
@@ -105,9 +106,10 @@ void render(uint32_t time_ms)
         info += tags.title + "\n";
 
     if(!tags.album.empty())
-        info += tags.album + "\n";
+        info += tags.album;
 
-    blit::Rect infoRect(5, blit::screen.bounds.h / 2, blit::screen.bounds.w - 10, blit::screen.bounds.h / 2 - 35);
+    // size for 5 lines of text
+    blit::Rect infoRect(5, blit::screen.bounds.h / 2 + 25, blit::screen.bounds.w - 10, (tall_font.char_h + tall_font.spacing_y) * 5);
     int centerH = blit::screen.bounds.h - 10; // center of progress bar
 
     // progress
@@ -133,7 +135,7 @@ void render(uint32_t time_ms)
     blit::screen.text(buf, blit::minimal_font, blit::Rect(0, centerH - 15, blit::screen.bounds.w - 5, 10), true, blit::TextAlign::top_right);
 
     // track info
-    blit::screen.text(info, blit::minimal_font, infoRect, true, blit::bottom_left);
+    blit::screen.text(info, tall_font, infoRect, true, blit::bottom_left);
 
     //
     //blit::screen.text(std::to_string(initTime) + " " + std::to_string(dataSize[0]), blit::minimal_font, blit::Point(0));
