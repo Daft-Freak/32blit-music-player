@@ -228,6 +228,10 @@ void VorbisStream::decode(int bufIndex)
     if(!samples)
         currentSample = nullptr;
 
+    // pad samples, should only happen at the end of the file
+    while(samples % 64)
+        dataSize[samples++] = 0;
+
     dataSize[bufIndex] = samples;
 }
 
@@ -262,9 +266,8 @@ void VorbisStream::callback()
     auto out = blit::channels[channel].wave_buffer;
 
     int i = 0;
-    for(; i < 64 && currentSample != endSample; i++)
+    for(; i < 64; i++)
         *(out++) = *(currentSample++);
-
 
     // swap buffers
     if(currentSample == endSample)
@@ -277,9 +280,6 @@ void VorbisStream::callback()
         if(currentSample == endSample)
             blit::debug("underrun!\n");
     }
-
-    for(; i < 64 && currentSample != endSample; i++)
-        *(out++) = *(currentSample++);
 
     bufferedSamples += 64;
 }
