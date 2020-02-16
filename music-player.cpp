@@ -19,7 +19,7 @@ MP3Stream mp3Stream;
 VorbisStream vorbisStream;
 MusicStream *musicStream;
 
-FileBrowser fileBrowser;
+FileBrowser fileBrowser(tall_font);
 std::string fileToLoad;
 bool renderedLoadMessage = false;
 
