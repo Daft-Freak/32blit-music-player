@@ -13,7 +13,8 @@ extern blit::ProfilerProbe *profilerReadProbe;
 extern blit::ProfilerProbe *profilerDecProbe;
 #endif
 
-#define STB_VORBIS_NO_STDIO
+#define STB_VORBIS_NO_PUSHDATA_API
+#include "stdio-wrap.hpp"
 #include "stb_vorbis.c"
 
 VorbisStream::VorbisStream()
@@ -43,58 +44,17 @@ bool VorbisStream::load(std::string filename)
         vorbis = nullptr;
     }
 
-    if(!audioFile.open(filename))
+    // init decoder
+    int error;
+    vorbis = stb_vorbis_open_filename(filename.c_str(), &error, nullptr);
+
+    if(!vorbis)
         return false;
 
     // TODO: we're opening the file twice here
 
     // just to throw everyone off, this function returns samples (unlike the MP3Stream version)
     auto durationSamples = calcDuration(filename);
-
-    // init decoder
-    // need a big buffer for this
-    int used = 0, error = 0;
-
-    int32_t bufferLen = 1024 * 8;
-    auto buffer = new uint8_t[bufferLen];
-    auto bufferFilled = std::min(audioFile.getBufferFilled(), bufferLen);
-
-    memcpy(buffer, audioFile.getBuffer(), bufferFilled);
-    int lastRead = bufferFilled;
-
-    while(!vorbis)
-    {
-        vorbis = stb_vorbis_open_pushdata(buffer, bufferFilled, &used, &error, nullptr);
-
-        if(!vorbis && error == VORBIS_need_more_data)
-        {
-            if(bufferFilled == bufferLen)
-            {
-                auto newBuf = new uint8_t[bufferLen * 2];
-                memcpy(newBuf, buffer, bufferFilled);
-
-                delete[] buffer;
-                buffer = newBuf;
-
-                bufferLen *= 2;
-            }
-
-            audioFile.read(lastRead);
-            int len = std::min(audioFile.getBufferFilled(), bufferLen - bufferFilled);
-            memcpy(buffer + bufferFilled, audioFile.getBuffer(), len);
-            bufferFilled += len;
-            lastRead = len;
-        }
-        else if(!vorbis)
-            break;
-    }
-
-    audioFile.read(lastRead - (bufferFilled - used));
-
-    delete[] buffer;
-
-    if(!vorbis)
-        return false;
 
     // get info
     auto info = stb_vorbis_get_info(vorbis);
@@ -105,9 +65,6 @@ bool VorbisStream::load(std::string filename)
     supported = sampleRate % 22050 == 0;
 
     durationMs = (durationSamples * 1000) / sampleRate;
-
-    lastOutput = nullptr;
-    lastOutputSamples = 0;
 
     // comments/tags
     tags = MusicTags();
@@ -157,7 +114,7 @@ bool VorbisStream::load(std::string filename)
 
 void VorbisStream::play(int channel)
 {
-    if(!audioFile.getBufferFilled())
+    if(!vorbis)
         return;
 
     this->channel = channel;
@@ -238,64 +195,19 @@ void VorbisStream::decode(int bufIndex)
     int samples = 0;
     int freqScale = sampleRate / 22050;
 
-    while(true)
+    if(needConvert)
     {
-        if(audioFile.getBufferFilled() == 0)
+        while(samples < audioBufSize)
         {
-            //printf("end %i\n", read);
-            currentSample = nullptr;
-            break;
-        }
-
-#ifdef PROFILER
-        profilerDecProbe->Start();
-#endif
-
-        float **outputs;
-        int tmpSamples;
-
-        if(lastOutput)
-        {
-            // re-use the output form last time
-            tmpSamples = lastOutputSamples;
-            outputs = lastOutput;
-            lastOutput = nullptr;
-        }
-        else
-        {
-            int used = stb_vorbis_decode_frame_pushdata(vorbis, audioFile.getBuffer(), audioFile.getBufferFilled(), nullptr, &outputs, &tmpSamples);
-
-            if(!used) // FIXME: actually handle not enough data
-            {
-                currentSample = nullptr;
-                break;
-            }
-
-#ifdef PROFILER
-            profilerReadProbe->Start();
-#endif
-
-            audioFile.read(used);
-
-#ifdef PROFILER
-            profilerReadProbe->Pause();
-#endif
-        }
-
-        // can't fit next output, save it for later
-        if(samples + tmpSamples / freqScale > audioBufSize)
-        {
-            lastOutput = outputs;
-            lastOutputSamples = tmpSamples;
-            break;
-        }
-
-        if(needConvert)
-        {
-            auto tmpBuf = new int16_t[tmpSamples];
+            int16_t tmpBuf[audioBufSize];
+            const int maxSize = audioBufSize;
+            const int size = std::min(maxSize, (maxSize - samples) * freqScale);
 
             short *buf[]{tmpBuf};
-            convert_samples_short(1, buf, 0, channels, outputs, 0, tmpSamples);
+            int tmpSamples = stb_vorbis_get_samples_short(vorbis, 1, buf, size);
+
+            if(!tmpSamples)
+                break;
 
             for(int i = 0; i < tmpSamples; i += freqScale, samples++)
             {
@@ -305,28 +217,16 @@ void VorbisStream::decode(int bufIndex)
                 
                 audioBuf[bufIndex][samples] = tmp / freqScale;
             }
-
-            delete[] tmpBuf;
         }
-        else
-        {
-            // FIXME: this is an internal function
-            short *buf[]{audioBuf[bufIndex]};
-            convert_samples_short(1, buf, samples, channels, outputs, 0, tmpSamples);
-            samples += tmpSamples;
-        }
-
-
-#ifdef PROFILER
-        profilerDecProbe->Pause();
-#endif
-
+    }
+    else
+    {
+        short *buf[]{audioBuf[bufIndex]};
+        samples = stb_vorbis_get_samples_short(vorbis, 1, buf, audioBufSize);
     }
 
-#ifdef PROFILER
-    profilerReadProbe->StoreElapsedUs();
-    profilerDecProbe->StoreElapsedUs();
-#endif
+    if(!samples)
+        currentSample = nullptr;
 
     dataSize[bufIndex] = samples;
 }

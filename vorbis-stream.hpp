@@ -40,15 +40,11 @@ private:
     static void staticCallback(void *arg);
     void callback();
 
-    BufferedFile audioFile;
-
     int channel = -1;
 
     stb_vorbis *vorbis;
     unsigned int channels, sampleRate;
     bool needConvert = false;
-    float **lastOutput = nullptr;
-    int lastOutputSamples = 0;
 
     static const int audioBufSize = 1024 * 4;
     int16_t audioBuf[2][audioBufSize];
