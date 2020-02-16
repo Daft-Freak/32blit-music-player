@@ -233,7 +233,7 @@ void VorbisStream::decode(int bufIndex)
 
     // pad samples, should only happen at the end of the file
     while(samples % 64)
-        dataSize[samples++] = 0;
+        audioBuf[bufIndex][samples++] = 0;
 
     dataSize[bufIndex] = samples;
 }
