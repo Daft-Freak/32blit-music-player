@@ -6,12 +6,13 @@
 #include <vector>
 
 #include "engine/file.hpp"
+#include "graphics/font.hpp"
 #include "types/rect.hpp"
 
 class FileBrowser final
 {
 public:
-    FileBrowser();
+    FileBrowser(const blit::Font &font = blit::minimal_font);
 
     void init();
 
@@ -26,7 +27,8 @@ public:
 private:
     void updateList();
 
-    static const int itemHeight = 10;
+    const blit::Font &font;
+
     static const int itemPadding = 2; // x padding
 
     std::vector<blit::FileInfo> files;

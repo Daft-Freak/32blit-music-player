@@ -3,7 +3,7 @@
 #include "engine/engine.hpp"
 #include "engine/input.hpp"
 
-FileBrowser::FileBrowser()
+FileBrowser::FileBrowser(const blit::Font &font) : font(font)
 {
     // too early
     //files = blit::list_files("");
@@ -20,6 +20,8 @@ void FileBrowser::init()
 
 void FileBrowser::render()
 {
+    int itemHeight = font.char_h + 2;
+
     int y = 0;
     int i = 0;
 
@@ -65,12 +67,12 @@ void FileBrowser::render()
         else
             blit::screen.pen = blit::Pen(0xF7, 0xF7, 0xF7);
 
-        r.h ++;
+        r.h += font.spacing_y; // account for vertical spacing in alignment
 
         r.x += itemPadding;
         r.w -= itemPadding * 2;
 
-        blit::screen.text(str, blit::minimal_font, r, true, blit::TextAlign::center_left, clipped);
+        blit::screen.text(str, font, r, true, blit::TextAlign::center_left, clipped);
 
         y += itemHeight;
         i++;
