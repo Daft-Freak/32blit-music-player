@@ -139,8 +139,6 @@ void render(uint32_t time_ms)
 
     //
     //blit::screen.text(std::to_string(initTime) + " " + std::to_string(dataSize[0]), blit::minimal_font, blit::Point(0));
-
-    fileBrowser.render();
 }
 
 void update(uint32_t time_ms)
