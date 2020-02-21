@@ -28,22 +28,38 @@ void FileBrowser::render()
     const int32_t openTextWidth = blit::screen.measure_text("Open", font).w;
     const int openIconSpaceW = openTextWidth + iconSize + itemPadding + 4;
 
+    // current dir info
+    blit::Rect r(displayRect.tl(), blit::Size(displayRect.w, itemHeight));
+    blit::screen.pen = blit::Pen(0xD7, 0xD7, 0xD7);
+    blit::screen.rectangle(r);
+    blit::screen.pen = blit::Pen(0x22, 0x22, 0x22);
+
+    r.x += itemPadding;
+    r.w -= itemPadding * 2;
+    blit::screen.text(curDir + "/", font, r, true, blit::TextAlign::center_left);
+
+    // files list
+    // reserve space to display current dir
+    auto filesDisplayRect = displayRect;
+    filesDisplayRect.h -= itemHeight;
+    filesDisplayRect.y += itemHeight;
+
     int y = 0;
     int i = 0;
 
     // scrolling
     int totalHeight = files.size() * itemHeight;
     int selectedY = selectedFile * itemHeight;
-    int yOff = displayRect.h / 2 - selectedY;
+    int yOff = filesDisplayRect.h / 2 - selectedY;
 
-    if(yOff < -(totalHeight - displayRect.h))
-        yOff = -(totalHeight - displayRect.h);
+    if(yOff < -(totalHeight - filesDisplayRect.h))
+        yOff = -(totalHeight - filesDisplayRect.h);
 
     yOff = std::min(0, yOff);
 
     for(auto &f : files)
     {
-        if(y + yOff > displayRect.h)
+        if(y + yOff > filesDisplayRect.h)
             break;
 
         if(y + yOff + itemHeight < 0)
@@ -63,8 +79,8 @@ void FileBrowser::render()
 
         auto str = f.name + ((f.flags & blit::FileFlags::directory) ? "/" : "");
 
-        blit::Rect r(displayRect.x, displayRect.y + yOff + y, displayRect.w, itemHeight);
-        blit::Rect clipped = r.intersection(displayRect);
+        blit::Rect r(filesDisplayRect.x, filesDisplayRect.y + yOff + y, filesDisplayRect.w, itemHeight);
+        blit::Rect clipped = r.intersection(filesDisplayRect);
 
         blit::screen.rectangle(clipped);
 
