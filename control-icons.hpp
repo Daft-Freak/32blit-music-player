@@ -31,7 +31,7 @@ public:
         DPadR
     };
 
-    void render(Icon icon, blit::Point pos, int size = 12);
+    void render(Icon icon, blit::Point pos, blit::Pen colour = blit::Pen(0xFF, 0xFF, 0xFF), int size = 12);
 private:
 
     blit::SpriteSheet *sprites;

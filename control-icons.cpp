@@ -14,7 +14,7 @@ ControlIcons::~ControlIcons()
     delete sprites;
 }
 
-void ControlIcons::render(Icon icon, blit::Point pos, int size)
+void ControlIcons::render(Icon icon, blit::Point pos, blit::Pen colour, int size)
 {
     int spriteIndex = static_cast<int>(icon);
 
@@ -27,6 +27,11 @@ void ControlIcons::render(Icon icon, blit::Point pos, int size)
     if(size >= 16)
         spriteRect.y += 4;
 
+    int avgCol = (colour.r + colour.g + colour.b) / 3;
+
     blit::screen.sprites = sprites;
+    sprites->palette[1] = colour;
+    sprites->palette[2] = avgCol > 127 ? blit::Pen(colour.r / 2, colour.g / 2, colour.b / 2, colour.a) : blit::Pen(colour.r * 2, colour.g * 2, colour.b * 2, colour.a); // shadow
+
     blit::screen.sprite(spriteRect, pos);
 }
