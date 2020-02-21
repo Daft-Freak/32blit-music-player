@@ -28,15 +28,29 @@ void FileBrowser::render()
     const int32_t openTextWidth = blit::screen.measure_text("Open", font).w;
     const int openIconSpaceW = openTextWidth + iconSize + itemPadding + 4;
 
+    const int32_t backTextWidth = blit::screen.measure_text("Back", font).w;
+    const int backIconSpaceW = backTextWidth + iconSize + itemPadding + 4;
+
     // current dir info
     blit::Rect r(displayRect.tl(), blit::Size(displayRect.w, itemHeight));
+    blit::Rect clipped = r;
+    clipped.w -= backIconSpaceW;
     blit::screen.pen = blit::Pen(0xD7, 0xD7, 0xD7);
     blit::screen.rectangle(r);
     blit::screen.pen = blit::Pen(0x22, 0x22, 0x22);
 
     r.x += itemPadding;
     r.w -= itemPadding * 2;
-    blit::screen.text(curDir + "/", font, r, true, blit::TextAlign::center_left);
+    blit::screen.text(curDir + "/", font, r, true, blit::TextAlign::center_left, clipped);
+
+    // back icon
+    if(!curDir.empty())
+    {
+        blit::Point iconOffset(-(backTextWidth + iconSize + 2), (itemHeight - font.char_h) / 2); // from the top-right
+
+        blit::screen.text("Back", font, r, true, blit::TextAlign::center_right);
+        controlIcons.render(ControlIcons::Icon::B, r.tr() + iconOffset, blit::Pen(0x22, 0x22, 0x22), iconSize);
+    }
 
     // files list
     // reserve space to display current dir
