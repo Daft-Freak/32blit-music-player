@@ -1,0 +1,5 @@
+assets.cpp:
+  prefix: asset_
+  assets/buttons.png:
+    packed: true
+    name: buttons

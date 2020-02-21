@@ -10,8 +10,11 @@ include(${32BLIT_PATH}/32blit.cmake)
 
 blit_executable(music-player
     buffered-file.cpp
+    control-icons.cpp
     file-browser.cpp
     mp3-stream.cpp
     music-player.cpp
     vorbis-stream.cpp
 )
+
+blit_assets_yaml(music-player assets.yml)
