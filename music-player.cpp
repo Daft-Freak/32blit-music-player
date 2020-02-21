@@ -1,5 +1,6 @@
 #include "music-player.hpp"
 
+#include "control-icons.hpp"
 #include "file-browser.hpp"
 #include "fonts.hpp"
 #include "mp3-stream.hpp"
@@ -136,6 +137,12 @@ void render(uint32_t time_ms)
 
     // track info
     blit::screen.text(info, tall_font, infoRect, true, blit::bottom_left);
+
+    // play/pause
+    std::string playPauseLabel = musicStream->getPlaying() ? "Pause" : "Play";
+    auto labelLen = blit::screen.measure_text(playPauseLabel, tall_font).w;
+    blit::screen.text(playPauseLabel, tall_font, infoRect, true, blit::top_right);
+    controlIcons.render(ControlIcons::Icon::X, infoRect.tr() - blit::Point(labelLen + 12 + 2, 0));
 
     //
     //blit::screen.text(std::to_string(initTime) + " " + std::to_string(dataSize[0]), blit::minimal_font, blit::Point(0));
