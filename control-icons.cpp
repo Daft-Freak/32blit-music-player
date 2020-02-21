@@ -4,6 +4,8 @@
 
 #include "engine/engine.hpp"
 
+ControlIcons controlIcons;
+
 ControlIcons::ControlIcons()
 {
     sprites = blit::SpriteSheet::load(asset_buttons);

@@ -36,3 +36,5 @@ private:
 
     blit::SpriteSheet *sprites;
 };
+
+extern ControlIcons controlIcons;
