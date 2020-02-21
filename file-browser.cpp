@@ -1,5 +1,7 @@
 #include "file-browser.hpp"
 
+#include "control-icons.hpp"
+
 #include "engine/engine.hpp"
 #include "engine/input.hpp"
 
@@ -20,7 +22,11 @@ void FileBrowser::init()
 
 void FileBrowser::render()
 {
-    int itemHeight = font.char_h + 2;
+    const int itemHeight = font.char_h + 2;
+    const int iconSize = font.char_h > 8 ? 12 : 8;
+
+    const int32_t openTextWidth = blit::screen.measure_text("Open", font).w;
+    const int openIconSpaceW = openTextWidth + iconSize + itemPadding + 4;
 
     int y = 0;
     int i = 0;
@@ -63,7 +69,10 @@ void FileBrowser::render()
         blit::screen.rectangle(clipped);
 
         if(i == selectedFile)
-            blit::screen.pen = blit::Pen(0x11, 0x11, 0x11);
+        {
+            clipped.w -= openIconSpaceW; // clip out the open icon
+            blit::screen.pen = blit::Pen(0x22, 0x22, 0x22);
+        }
         else
             blit::screen.pen = blit::Pen(0xF7, 0xF7, 0xF7);
 
@@ -73,6 +82,16 @@ void FileBrowser::render()
         r.w -= itemPadding * 2;
 
         blit::screen.text(str, font, r, true, blit::TextAlign::center_left, clipped);
+
+        // open icon
+        if(i == selectedFile)
+        {
+            clipped.w += openIconSpaceW;
+            blit::Point iconOffset(-(openTextWidth + iconSize + 2), (itemHeight - font.char_h) / 2); // from the top-right
+
+            blit::screen.text("Open", font, r, true, blit::TextAlign::center_right, clipped);
+            controlIcons.render(ControlIcons::Icon::A, r.tr() + iconOffset, blit::Pen(0x22, 0x22, 0x22), iconSize);
+        }
 
         y += itemHeight;
         i++;
