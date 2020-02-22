@@ -25,7 +25,10 @@ inline wrap_FILE *wrap_fopen(const char *filename, const char *mode)
     ret->getc_buf_len = ret->getc_buf_off = 0;
 
     if(!ret->file.is_open())
+    {
+        delete ret;
         return nullptr;
+    }
     
     return ret;
 }
@@ -33,6 +36,7 @@ inline wrap_FILE *wrap_fopen(const char *filename, const char *mode)
 inline int wrap_fclose(wrap_FILE *file)
 {
     file->file.close();
+    delete file;
     return 0;
 }
 
