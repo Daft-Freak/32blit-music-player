@@ -10,7 +10,7 @@ jobs:
   include:
     - name: "STM32"
       env:
-        - TOOLCHAIN=../32blit.toolchain
+        - TOOLCHAIN=..32blit-beta//32blit.toolchain
         - RELEASE_FILE=${TRAVIS_BUILD_DIR}${REPO}-${TRAVIS_TAG}-${TRAVIS_BUILD_NUMBER}-STM32
       addons:
         apt:
@@ -39,5 +39,5 @@ install:
 
 script:
   - mkdir build && cd build
-  - cmake -DCMAKE_TOOLCHAIN_FILE=$TOOLCHAIN -DCMAKE_INSTALL_PREFIX=`pwd` -D32BLIT_PATH=../32blit-deta $CMAKE_ARGS ..
+  - cmake -DCMAKE_TOOLCHAIN_FILE=$TOOLCHAIN -DCMAKE_INSTALL_PREFIX=`pwd` -D32BLIT_PATH=../32blit-beta $CMAKE_ARGS ..
   - cmake --build .
