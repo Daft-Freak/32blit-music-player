@@ -10,7 +10,7 @@ jobs:
   include:
     - name: "STM32"
       env:
-        - TOOLCHAIN=..32blit-beta//32blit.toolchain
+        - TOOLCHAIN=../32blit-beta/32blit.toolchain
         - RELEASE_FILE=${TRAVIS_BUILD_DIR}${REPO}-${TRAVIS_TAG}-${TRAVIS_BUILD_NUMBER}-STM32
       addons:
         apt:
@@ -34,7 +34,7 @@ jobs:
         edge: true
 
 install:
-  - git clone https://github.com/pimoroni/32blit-beta
+  - git clone --depth 1 https://github.com/pimoroni/32blit-beta
   - python3 -m pip install 32blit
 
 script:
