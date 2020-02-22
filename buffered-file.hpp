@@ -2,6 +2,8 @@
 #include <cstdint>
 #include <string>
 
+#include "engine/file.hpp"
+
 class BufferedFile final
 {
 public:
@@ -16,7 +18,7 @@ public:
     const uint8_t *getBuffer() const;
 
 private:
-    int32_t file = -1;
+    blit::File file;
     uint32_t offset = 0;
 
     static const int bufferSize = 1024 * 4;

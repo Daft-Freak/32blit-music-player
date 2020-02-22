@@ -29,7 +29,7 @@ static uint32_t getInt32(char *buf)
     return ubuf[3] | (ubuf[2] << 8) | (ubuf[1] << 16) | (ubuf[0] << 24);
 }
 
-static std::string readString(int32_t file, uint32_t offset, char encoding, int32_t len)
+static std::string readString(blit::File &file, uint32_t offset, char encoding, int32_t len)
 {
     std::string ret;
 
@@ -37,25 +37,25 @@ static std::string readString(int32_t file, uint32_t offset, char encoding, int3
     {
         // ISO-8859-1
         char c;
-        blit::read_file(file, offset++, 1, &c);
+        file.read(offset++, 1, &c);
 
         for(int i = 1; i < len || (len == -1 && c); i++)
         {
             // "convert" by throwing away anything non-ascii
             if((c & 0x80) == 0)
                 ret += c;
-            blit::read_file(file, offset++, 1, &c);
+            file.read(offset++, 1, &c);
         }
     }
     else if(encoding == 1)
     {
         // UCS-2
         uint16_t bom;
-        blit::read_file(file, offset, 2, reinterpret_cast<char *>(&bom));
+        file.read(offset, 2, reinterpret_cast<char *>(&bom));
         offset += 2;
 
         uint16_t c;
-        blit::read_file(file, offset, 2, reinterpret_cast<char *>(&c));
+        file.read(offset, 2, reinterpret_cast<char *>(&c));
         offset += 2;
 
         for(int i = 1; i < (len - 2) / 2 || (len == -1 && c); i++)
@@ -66,7 +66,7 @@ static std::string readString(int32_t file, uint32_t offset, char encoding, int3
             else if((c >> 8) < 0x80)
                 ret += (c >> 8);
 
-            blit::read_file(file, offset, 2, reinterpret_cast<char *>(&c));
+            file.read(offset, 2, reinterpret_cast<char *>(&c));
             offset += 2;
         }
     }
@@ -74,14 +74,14 @@ static std::string readString(int32_t file, uint32_t offset, char encoding, int3
     {
         // UTF-8
         char c;
-        blit::read_file(file, offset++, 1, &c);
+        file.read(offset++, 1, &c);
 
         for(int i = 1; i < len || (len == -1 && c); i++)
         {
             // "convert" by throwing away anything non-ascii
             if((c & 0x80) == 0)
                 ret += c;
-            blit::read_file(file, offset++, 1, &c);
+            file.read(offset++, 1, &c);
         }
     }
     else
@@ -90,10 +90,10 @@ static std::string readString(int32_t file, uint32_t offset, char encoding, int3
     return ret;
 }
 
-static std::string readTextTag(int32_t file, uint32_t offset, int32_t len)
+static std::string readTextTag(blit::File &file, uint32_t offset, int32_t len)
 {
     char encoding;
-    blit::read_file(file, offset, 1, &encoding);
+    file.read(offset, 1, &encoding);
 
     return readString(file, offset + 1, encoding, len);
 }
@@ -132,19 +132,16 @@ MusicTags MP3Stream::parseTags(std::string filename)
 {
     MusicTags ret;
 
-    auto file = blit::open_file(filename);
+    blit::File file(filename);
 
-    if(file == -1)
+    if(!file.is_open())
         return ret;
 
     char buf[10];
-    blit::read_file(file, 0, 10, buf);
+    file.read(0, 10, buf);
 
     if(memcmp(buf, "ID3", 3) != 0)
-    {
-        blit::close_file(file);
         return ret;
-    }
 
     // version/flags
     int versionMajor = buf[3], versionMinor = buf[4];
@@ -160,14 +157,14 @@ MusicTags MP3Stream::parseTags(std::string filename)
     // skip extended header
     if(flags & 0x40)
     {
-        blit::read_file(file, offset, 4, buf);
+        file.read(offset, 4, buf);
         offset += getSynchsafe(buf);
     }
 
     while(offset < size)
     {
         // read header
-        blit::read_file(file, offset, 10, buf);
+        file.read(offset, 10, buf);
 
         if(buf[0] == 0)
             break;
@@ -191,7 +188,6 @@ MusicTags MP3Stream::parseTags(std::string filename)
         offset += frameSize;
     }
 
-    blit::close_file(file);
     return ret;
 }
 

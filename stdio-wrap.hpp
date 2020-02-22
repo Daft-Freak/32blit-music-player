@@ -8,7 +8,7 @@
 
 struct wrap_FILE
 {
-    int32_t file;
+    blit::File file;
     uint32_t offset;
 
     uint8_t getc_buffer[512];
@@ -19,12 +19,12 @@ inline wrap_FILE *wrap_fopen(const char *filename, const char *mode)
 {
     auto ret = new wrap_FILE;
 
-    ret->file = blit::open_file(filename);
+    ret->file.open(filename);
     ret->offset = 0;
 
     ret->getc_buf_len = ret->getc_buf_off = 0;
 
-    if(ret->file == -1)
+    if(!ret->file.is_open())
         return nullptr;
     
     return ret;
@@ -32,7 +32,8 @@ inline wrap_FILE *wrap_fopen(const char *filename, const char *mode)
 
 inline int wrap_fclose(wrap_FILE *file)
 {
-    return blit::close_file(file->file) == -1 ? EOF : 0;
+    file->file.close();
+    return 0;
 }
 
 inline size_t wrap_fread(void *buffer, size_t size, size_t count, wrap_FILE *file)
@@ -44,7 +45,7 @@ inline size_t wrap_fread(void *buffer, size_t size, size_t count, wrap_FILE *fil
         file->getc_buf_off = file->getc_buf_len = 0;
     }
 
-    auto ret = blit::read_file(file->file, file->offset, size * count, (char *)buffer);
+    auto ret = file->file.read(file->offset, size * count, (char *)buffer);
     file->offset += ret;
 
     return ret < 0 ? 0 : ret / size;
@@ -56,7 +57,7 @@ inline int wrap_fgetc(wrap_FILE *file)
     if(file->getc_buf_off >= file->getc_buf_len)
     {
         file->offset += file->getc_buf_off;
-        file->getc_buf_len = blit::read_file(file->file, file->offset, 512, (char*)file->getc_buffer);
+        file->getc_buf_len = file->file.read(file->offset, 512, (char*)file->getc_buffer);
         file->getc_buf_off = 0;
     }
 
@@ -80,7 +81,7 @@ inline int wrap_fseek(wrap_FILE *file, long offset, int origin)
     else if(origin == SEEK_CUR)
         file->offset += offset;
     else
-        file->offset = blit::get_file_length(file->file) - offset;
+        file->offset = file->file.get_length() - offset;
 
     return 0;
 }

@@ -101,14 +101,13 @@ bool VorbisStream::load(std::string filename)
 {
     MusicTags ret;
 
-    auto file = blit::open_file(filename);
+    blit::File file(filename);
 
     if(file == -1)
         return ret;
 
     //TODO: standalone tag parsing
 
-    blit::close_file(file);
     return ret;
 }*/
 
@@ -296,17 +295,17 @@ uint64_t VorbisStream::calcDuration(std::string filename)
 {
     // scan through the file backwards to find the sample pos of the last page
 
-    auto file = blit::open_file(filename);
-    if(file == -1)
+    blit::File file(filename);
+    if(!file.is_open())
         return 0;
 
-    auto length = blit::get_file_length(file);
+    auto length = file.get_length();
     const int chunkLen = 1024;
     
     for(uint32_t offset = chunkLen; offset < length; offset += chunkLen - 14)
     {
         uint8_t buf[chunkLen];
-        blit::read_file(file, length - offset, chunkLen, reinterpret_cast<char *>(buf));
+        file.read(length - offset, chunkLen, reinterpret_cast<char *>(buf));
 
         for(int i = chunkLen - 14; i >= 0; i--)
         {
@@ -323,13 +322,10 @@ uint64_t VorbisStream::calcDuration(std::string filename)
                     (static_cast<uint64_t>(buf[i + 12]) << 48) |
                     (static_cast<uint64_t>(buf[i + 13]) << 56);
 
-                blit::close_file(file);
                 return sampleOff;
             }
         }
     }
-
-    blit::close_file(file);
 
     return 0;
 }

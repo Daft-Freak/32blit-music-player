@@ -11,23 +11,18 @@ BufferedFile::BufferedFile()
 
 BufferedFile::~BufferedFile()
 {
-    if(file != -1)
-        blit::close_file(file);
 }
 
 bool BufferedFile::open(std::string filename)
 {
     bufferFilled = 0;
 
-    if(file >= 0)
-        blit::close_file(file);
+    file.open(filename);
 
-    file = blit::open_file(filename);
-
-    if(file < 0)
+    if(!file.is_open())
         return false;
 
-    bufferFilled = blit::read_file(file, 0, bufferSize, reinterpret_cast<char *>(buffer));
+    bufferFilled = file.read(0, bufferSize, reinterpret_cast<char *>(buffer));
 
     if(bufferFilled <= 0)
         return false;
@@ -44,7 +39,7 @@ void BufferedFile::read(int32_t len)
 
     bufferFilled -= len;
 
-    auto read = blit::read_file(file, offset, bufferSize - bufferFilled, reinterpret_cast<char *>(buffer) + bufferFilled);
+    auto read = file.read(offset, bufferSize - bufferFilled, reinterpret_cast<char *>(buffer) + bufferFilled);
 
     if(read <= 0)
         return;
