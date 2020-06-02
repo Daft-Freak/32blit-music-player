@@ -71,7 +71,9 @@ void render(uint32_t time_ms)
 
 #ifdef PROFILER
     profiler.display_probe_overlay(1);
-    return;
+
+    if(musicStream)
+        return;
 #endif
 
     if(!fileToLoad.empty())
