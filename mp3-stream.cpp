@@ -279,7 +279,7 @@ void MP3Stream::decode(int bufIndex)
             break;
 
 #ifdef PROFILER
-        profilerDecProbe->Start();
+        profilerDecProbe->start();
 #endif
 
         if(needConvert)
@@ -307,7 +307,7 @@ void MP3Stream::decode(int bufIndex)
             samples += mp3dec_decode_frame(&mp3dec, audioFile.getBuffer(), audioFile.getBufferFilled(), audioBuf[bufIndex] + samples, &info);
 
 #ifdef PROFILER
-        profilerDecProbe->Pause();
+        profilerDecProbe->pause();
 #endif
 
         // switch conversion on and retry if needed
@@ -321,21 +321,21 @@ void MP3Stream::decode(int bufIndex)
         }
     
 #ifdef PROFILER
-        profilerReadProbe->Start();
+        profilerReadProbe->start();
 #endif
 
         audioFile.read(info.frame_bytes);
 
 #ifdef PROFILER
-        profilerReadProbe->Pause();
+        profilerReadProbe->pause();
 #endif
 
         // / 2 because we only ever store mono
     } while (samples + (MINIMP3_MAX_SAMPLES_PER_FRAME / (2 * freqScale)) <= audioBufSize);
 
 #ifdef PROFILER
-    profilerReadProbe->StoreElapsedUs();
-    profilerDecProbe->StoreElapsedUs();
+    profilerReadProbe->store_elapsed_us();
+    profilerDecProbe->store_elapsed_us();
 #endif
 
     if(!samples)

@@ -36,20 +36,20 @@ void init()
     blit::set_screen_mode(blit::ScreenMode::hires);
 
 #ifdef PROFILER
-    profiler.SetDisplaySize(blit::screen.bounds.w, blit::screen.bounds.h);
-    profiler.SetRows(5);
-    profiler.SetAlpha(200);
-    profiler.DisplayHistory(true);
+    profiler.set_display_size(blit::screen.bounds.w, blit::screen.bounds.h);
+    profiler.set_rows(5);
+    profiler.set_alpha(200);
+    profiler.display_history(true);
 
-    profiler.SetupGraphElement(blit::Profiler::dmCur, true, true, blit::Pen(0, 255, 0));
-    profiler.SetupGraphElement(blit::Profiler::dmAvg, true, true, blit::Pen(0, 255, 255));
-    profiler.SetupGraphElement(blit::Profiler::dmMax, true, true, blit::Pen(255, 0, 0));
-    profiler.SetupGraphElement(blit::Profiler::dmMin, true, true, blit::Pen(255, 255, 0));
+    profiler.setup_graph_element(blit::Profiler::dmCur, true, true, blit::Pen(0, 255, 0));
+    profiler.setup_graph_element(blit::Profiler::dmAvg, true, true, blit::Pen(0, 255, 255));
+    profiler.setup_graph_element(blit::Profiler::dmMax, true, true, blit::Pen(255, 0, 0));
+    profiler.setup_graph_element(blit::Profiler::dmMin, true, true, blit::Pen(255, 255, 0));
 
-    profilerUpdateProbe = profiler.AddProbe("Update", 300);
-    profilerRefillProbe = profiler.AddProbe("Refill", 300);
-    profilerReadProbe = profiler.AddProbe("Read", 300);
-    profilerDecProbe = profiler.AddProbe("Decode", 300);
+    profilerUpdateProbe = profiler.add_probe("Update", 300);
+    profilerRefillProbe = profiler.add_probe("Refill", 300);
+    profilerReadProbe = profiler.add_probe("Read", 300);
+    profilerDecProbe = profiler.add_probe("Decode", 300);
 #endif
 
     fileBrowser.setExtensions({".mp3", ".ogg", ".oga"});
@@ -70,7 +70,7 @@ void render(uint32_t time_ms)
     blit::screen.clear();
 
 #ifdef PROFILER
-    profiler.DisplayProbeOverlay(1);
+    profiler.display_probe_overlay(1);
     return;
 #endif
 
@@ -151,7 +151,7 @@ void render(uint32_t time_ms)
 void update(uint32_t time_ms)
 {
 #ifdef PROFILER
-    profiler.SetGraphTime(profilerUpdateProbe->ElapsedMetrics().uMaxElapsedUs);
+    profiler.set_graph_time(profilerUpdateProbe->elapsed_metrics().uMaxElapsedUs);
     blit::ScopedProfilerProbe scopedProbe(profilerUpdateProbe);
 #endif
 
