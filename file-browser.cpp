@@ -2,6 +2,7 @@
 
 #include "control-icons.hpp"
 
+#include "engine/api.hpp"
 #include "engine/engine.hpp"
 #include "engine/input.hpp"
 
