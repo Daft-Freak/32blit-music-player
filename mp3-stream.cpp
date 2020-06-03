@@ -1,8 +1,10 @@
 #include <cinttypes>
 
-#define MINIMP3_IMPLEMENTATION
-
 #include "mp3-stream.hpp"
+
+#define MINIMP3_IMPLEMENTATION
+#define MINIMP3_ONLY_MP3
+#include "minimp3.h"
 
 #include "audio/audio.hpp"
 #include "engine/engine.hpp"
@@ -100,7 +102,12 @@ static std::string readTextTag(blit::File &file, uint32_t offset, int32_t len)
 
 MP3Stream::MP3Stream()
 {
+    mp3dec = new mp3dec_t;
+}
 
+MP3Stream::~MP3Stream()
+{
+    delete mp3dec;
 }
 
 bool MP3Stream::load(std::string filename, bool doDurationCalc)
@@ -126,7 +133,7 @@ bool MP3Stream::load(std::string filename, bool doDurationCalc)
 
     if(doDurationCalc)
     {
-        mp3dec_init(&mp3dec);
+        mp3dec_init(static_cast<mp3dec_t *>(mp3dec));
         durationMs = calcDuration();
     }
     else
@@ -136,7 +143,7 @@ bool MP3Stream::load(std::string filename, bool doDurationCalc)
     tags = parseTags(filename);
 
     // start the decoder
-    mp3dec_init(&mp3dec);
+    mp3dec_init(static_cast<mp3dec_t *>(mp3dec));
 
     return true;
 }
@@ -299,7 +306,7 @@ void MP3Stream::decode(int bufIndex)
         {
             // attempt to convert to mono 22050Hz (badly)
             int16_t tmpBuf[MINIMP3_MAX_SAMPLES_PER_FRAME];
-            int tmpSamples = mp3dec_decode_frame(&mp3dec, fileBuffer, fileBufferFilled, tmpBuf, &info);
+            int tmpSamples = mp3dec_decode_frame(static_cast<mp3dec_t *>(mp3dec), fileBuffer, fileBufferFilled, tmpBuf, &info);
             
             if(tmpSamples)
             {
@@ -317,7 +324,7 @@ void MP3Stream::decode(int bufIndex)
             }
         }
         else
-            samples += mp3dec_decode_frame(&mp3dec, fileBuffer, fileBufferFilled, audioBuf[bufIndex] + samples, &info);
+            samples += mp3dec_decode_frame(static_cast<mp3dec_t *>(mp3dec), fileBuffer, fileBufferFilled, audioBuf[bufIndex] + samples, &info);
 
 #ifdef PROFILER
         profilerDecProbe->pause();
@@ -428,7 +435,7 @@ int MP3Stream::calcDuration()
     //while(true)
     while(fileBufferFilled)
     {
-        samples += mp3dec_decode_frame(&mp3dec, fileBuffer, fileBufferFilled, nullptr, &info);
+        samples += mp3dec_decode_frame(static_cast<mp3dec_t *>(mp3dec), fileBuffer, fileBufferFilled, nullptr, &info);
         read(info.frame_bytes);
     }
 

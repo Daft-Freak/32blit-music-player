@@ -2,9 +2,6 @@
 
 #include <string>
 
-#define MINIMP3_ONLY_MP3
-#include "minimp3.h"
-
 #include "engine/file.hpp"
 
 #include "music-stream.hpp"
@@ -14,6 +11,7 @@ class MP3Stream final : public MusicStream
 {
 public:
     MP3Stream();
+    ~MP3Stream();
 
     bool load(std::string filename, bool doDurationCalc = false);
 
@@ -53,10 +51,10 @@ private:
     int channel = -1;
 
     // decoding
-    mp3dec_t mp3dec;
+    void *mp3dec = nullptr;
     bool needConvert = false;
 
-    static const int audioBufSize = MINIMP3_MAX_SAMPLES_PER_FRAME * 2;
+    static const int audioBufSize = 1152 * 4;
     int16_t audioBuf[2][audioBufSize];
     int16_t *currentSample = nullptr, *endSample = nullptr;
     int dataSize[2]{};
