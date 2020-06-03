@@ -8,7 +8,7 @@ class MusicStream
 public:
     virtual ~MusicStream(){}
 
-    virtual bool load(std::string filename) = 0;
+    //virtual bool load(std::string filename) = 0;
 
     virtual void play(int channel) = 0;
     virtual void pause() = 0;

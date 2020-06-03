@@ -167,7 +167,7 @@ void update(uint32_t time_ms)
         auto ext = fileToLoad.substr(fileToLoad.find_last_of('.'));
         std::for_each(ext.begin(), ext.end(), [](char & c) {c = tolower(c);});
 
-        if(ext == ".mp3" && mp3Stream.load(fileToLoad))
+        if(ext == ".mp3" && mp3Stream.load(fileToLoad, true))
             musicStream = &mp3Stream;
         else if((ext == ".ogg" || ext == ".oga") && vorbisStream.load(fileToLoad))
             musicStream = &vorbisStream;

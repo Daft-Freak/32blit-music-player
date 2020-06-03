@@ -103,7 +103,7 @@ MP3Stream::MP3Stream()
 
 }
 
-bool MP3Stream::load(std::string filename)
+bool MP3Stream::load(std::string filename, bool doDurationCalc)
 {
     if(channel != -1)
         blit::channels[channel].off();
@@ -124,10 +124,15 @@ bool MP3Stream::load(std::string filename)
     if(!fileBufferFilled)
         return false;
 
-    // TODO: we're opening the file twice here
-    mp3dec_init(&mp3dec);
-    durationMs = calcDuration(filename);
+    if(doDurationCalc)
+    {
+        mp3dec_init(&mp3dec);
+        durationMs = calcDuration();
+    }
+    else
+        durationMs = 0;
 
+    // TODO: we're opening the file twice here
     tags = parseTags(filename);
 
     // start the decoder
@@ -413,7 +418,7 @@ void MP3Stream::callback()
     bufferedSamples += 64;
 }
 
-int MP3Stream::calcDuration(std::string filename)
+int MP3Stream::calcDuration()
 {
     // decode entire file to get length
     unsigned int samples = 0;

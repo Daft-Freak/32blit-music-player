@@ -15,7 +15,7 @@ class MP3Stream final : public MusicStream
 public:
     MP3Stream();
 
-    bool load(std::string filename);
+    bool load(std::string filename, bool doDurationCalc = false);
 
     MusicTags parseTags(std::string filename);
 
@@ -35,7 +35,7 @@ public:
 
 private:
     void decode(int bufIndex);
-    int calcDuration(std::string filename);
+    int calcDuration();
 
     void read(int32_t len);
 
