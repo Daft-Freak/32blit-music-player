@@ -113,10 +113,18 @@ bool MP3Stream::load(std::string filename)
     needConvert = false;
     supported = true;
 
-    if(!audioFile.open(filename))
+    if(!file.open(filename))
         return false;
 
-    // TODO: we're opening the file three times here
+    // fill initial buffer
+    fileBufferFilled = 0;
+    fileOffset = 0;
+    read(0);
+
+    if(!fileBufferFilled)
+        return false;
+
+    // TODO: we're opening the file twice here
     mp3dec_init(&mp3dec);
     durationMs = calcDuration(filename);
 
@@ -193,7 +201,7 @@ MusicTags MP3Stream::parseTags(std::string filename)
 
 void MP3Stream::play(int channel)
 {
-    if(!audioFile.getBufferFilled())
+    if(!fileBufferFilled)
         return;
 
     this->channel = channel;
@@ -275,7 +283,7 @@ void MP3Stream::decode(int bufIndex)
 
     do
     {
-        if(audioFile.getBufferFilled() == 0)
+        if(fileBufferFilled == 0)
             break;
 
 #ifdef PROFILER
@@ -286,7 +294,7 @@ void MP3Stream::decode(int bufIndex)
         {
             // attempt to convert to mono 22050Hz (badly)
             int16_t tmpBuf[MINIMP3_MAX_SAMPLES_PER_FRAME];
-            int tmpSamples = mp3dec_decode_frame(&mp3dec, audioFile.getBuffer(), audioFile.getBufferFilled(), tmpBuf, &info);
+            int tmpSamples = mp3dec_decode_frame(&mp3dec, fileBuffer, fileBufferFilled, tmpBuf, &info);
             
             if(tmpSamples)
             {
@@ -304,7 +312,7 @@ void MP3Stream::decode(int bufIndex)
             }
         }
         else
-            samples += mp3dec_decode_frame(&mp3dec, audioFile.getBuffer(), audioFile.getBufferFilled(), audioBuf[bufIndex] + samples, &info);
+            samples += mp3dec_decode_frame(&mp3dec, fileBuffer, fileBufferFilled, audioBuf[bufIndex] + samples, &info);
 
 #ifdef PROFILER
         profilerDecProbe->pause();
@@ -324,7 +332,7 @@ void MP3Stream::decode(int bufIndex)
         profilerReadProbe->start();
 #endif
 
-        audioFile.read(info.frame_bytes);
+        read(info.frame_bytes);
 
 #ifdef PROFILER
         profilerReadProbe->pause();
@@ -408,21 +416,38 @@ void MP3Stream::callback()
 int MP3Stream::calcDuration(std::string filename)
 {
     // decode entire file to get length
-    BufferedFile file;
-    if(!file.open(filename))
-        return 0;
-
     unsigned int samples = 0;
 
     mp3dec_frame_info_t info = {};
 
     //while(true)
-    while(file.getBufferFilled())
+    while(fileBufferFilled)
     {
-        samples += mp3dec_decode_frame(&mp3dec, file.getBuffer(), file.getBufferFilled(), nullptr, &info);
-        file.read(info.frame_bytes);
+        samples += mp3dec_decode_frame(&mp3dec, fileBuffer, fileBufferFilled, nullptr, &info);
+        read(info.frame_bytes);
     }
+
+    // reset;
+    fileOffset = 0;
+    fileBufferFilled = 0;
+    read(0);
 
     int lenMs = (static_cast<uint64_t>(samples) * 1000) / info.hz;
     return lenMs;
+}
+
+void MP3Stream::read(int32_t len)
+{
+    if(len < fileBufferSize)
+        memmove(fileBuffer, fileBuffer + len, fileBufferFilled - len);
+
+    fileBufferFilled -= len;
+
+    auto read = file.read(fileOffset, fileBufferSize - fileBufferFilled, reinterpret_cast<char *>(fileBuffer) + fileBufferFilled);
+
+    if(read <= 0)
+        return;
+
+    fileBufferFilled += read;
+    fileOffset += read;
 }

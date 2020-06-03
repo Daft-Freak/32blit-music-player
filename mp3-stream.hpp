@@ -5,7 +5,8 @@
 #define MINIMP3_ONLY_MP3
 #include "minimp3.h"
 
-#include "buffered-file.hpp"
+#include "engine/file.hpp"
+
 #include "music-stream.hpp"
 #include "music-tags.hpp"
 
@@ -36,13 +37,22 @@ private:
     void decode(int bufIndex);
     int calcDuration(std::string filename);
 
+    void read(int32_t len);
+
     static void staticCallback(void *arg);
     void callback();
 
-    BufferedFile audioFile;
+    // file io
+    blit::File file;
+    uint32_t fileOffset = 0;
+
+    static const int fileBufferSize = 1024 * 4;
+    uint8_t fileBuffer[fileBufferSize];
+    int32_t fileBufferFilled = 0;
 
     int channel = -1;
 
+    // decoding
     mp3dec_t mp3dec;
     bool needConvert = false;
 

@@ -2,7 +2,7 @@
 
 #include <string>
 
-#include "buffered-file.hpp"
+#include "engine/file.hpp"
 #include "music-stream.hpp"
 #include "music-tags.hpp"
 
