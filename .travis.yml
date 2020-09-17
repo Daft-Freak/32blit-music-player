@@ -9,6 +9,7 @@ dist: bionic
 jobs:
   include:
     - name: "STM32"
+      dist: focal
       env:
         - TOOLCHAIN=../32blit-beta/32blit.toolchain
         - RELEASE_FILE=${TRAVIS_BUILD_DIR}${REPO}-${TRAVIS_TAG}-${TRAVIS_BUILD_NUMBER}-STM32
