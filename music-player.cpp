@@ -52,9 +52,9 @@ void init()
     profilerDecProbe = profiler.add_probe("Decode", 300);
 #endif
 
-    fileBrowser.setExtensions({".mp3", ".ogg", ".oga"});
-    fileBrowser.setDisplayRect(blit::Rect(5, 5, blit::screen.bounds.w - 10, blit::screen.bounds.h / 2 + 15));
-    fileBrowser.setOnFileOpen(openMP3);
+    fileBrowser.set_extensions({".mp3", ".ogg", ".oga"});
+    fileBrowser.set_display_rect(blit::Rect(0, 0, blit::screen.bounds.w, blit::screen.bounds.h / 2 + 20));
+    fileBrowser.set_on_file_open(openMP3);
     fileBrowser.init();
 }
 
