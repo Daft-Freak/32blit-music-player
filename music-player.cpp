@@ -1,8 +1,8 @@
 #include "music-player.hpp"
 
+#include "assets.hpp"
 #include "control-icons.hpp"
 #include "file-browser.hpp"
-#include "fonts.hpp"
 #include "mp3-stream.hpp"
 #include "vorbis-stream.hpp"
 
@@ -20,7 +20,9 @@ MP3Stream mp3Stream;
 VorbisStream vorbisStream;
 MusicStream *musicStream;
 
-FileBrowser fileBrowser(tall_font);
+const blit::Font tallFont(asset_tall_font);
+FileBrowser fileBrowser(tallFont);
+
 std::string fileToLoad;
 bool renderedLoadMessage = false;
 
@@ -112,7 +114,7 @@ void render(uint32_t time_ms)
         info += tags.album;
 
     // size for 5 lines of text
-    blit::Rect infoRect(5, blit::screen.bounds.h / 2 + 25, blit::screen.bounds.w - 10, (tall_font.char_h + tall_font.spacing_y) * 5);
+    blit::Rect infoRect(5, blit::screen.bounds.h / 2 + 25, blit::screen.bounds.w - 10, (tallFont.char_h + tallFont.spacing_y) * 5);
     int centerH = blit::screen.bounds.h - 10; // center of progress bar
 
     // progress
@@ -138,12 +140,12 @@ void render(uint32_t time_ms)
     blit::screen.text(buf, blit::minimal_font, blit::Rect(0, centerH - 15, blit::screen.bounds.w - 5, 10), true, blit::TextAlign::top_right);
 
     // track info
-    blit::screen.text(info, tall_font, infoRect, true, blit::bottom_left);
+    blit::screen.text(info, tallFont, infoRect, true, blit::bottom_left);
 
     // play/pause
     std::string playPauseLabel = musicStream->getPlaying() ? "Pause" : "Play";
-    auto labelLen = blit::screen.measure_text(playPauseLabel, tall_font).w;
-    blit::screen.text(playPauseLabel, tall_font, infoRect, true, blit::top_right);
+    auto labelLen = blit::screen.measure_text(playPauseLabel, tallFont).w;
+    blit::screen.text(playPauseLabel, tallFont, infoRect, true, blit::top_right);
     controlIcons.render(ControlIcons::Icon::X, infoRect.tr() - blit::Point(labelLen + 12 + 2, 0));
 
     //
