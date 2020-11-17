@@ -17,3 +17,4 @@ blit_executable(music-player
 )
 
 blit_assets_yaml(music-player assets.yml)
+blit_metadata(music-player metadata.yml)

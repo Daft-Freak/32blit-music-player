@@ -1,0 +1,8 @@
+title: Music Player
+description: Plays MP3 and Ogg Vorbis files.
+author: Daft_Freak
+splash:
+  file: splash.png
+icon:
+  file: icon.png
+version: v0.3.0
