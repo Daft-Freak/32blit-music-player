@@ -33,6 +33,13 @@ inline wrap_FILE *wrap_fopen(const char *filename, const char *mode)
     return ret;
 }
 
+// for MSVC
+inline int wrap_fopen_s(wrap_FILE **f, const char *filename, const char *mode)
+{
+    *f = wrap_fopen(filename, mode);
+    return *f == nullptr ? 1 : 0;
+}
+
 inline int wrap_fclose(wrap_FILE *file)
 {
     file->file.close();
@@ -97,6 +104,7 @@ inline long wrap_ftell(wrap_FILE *file)
 
 #define FILE wrap_FILE
 #define fopen wrap_fopen
+#define fopen_s wrap_fopen_s
 #define fclose wrap_fclose
 #define fread wrap_fread
 #define fgetc wrap_fgetc
