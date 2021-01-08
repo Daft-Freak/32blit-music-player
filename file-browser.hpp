@@ -20,6 +20,8 @@ public:
 
     void set_on_file_open(void (*func)(std::string));
 
+    void set_current_dir(const std::string &dir);
+
 private:
     void update_list();
 

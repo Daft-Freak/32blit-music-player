@@ -56,6 +56,18 @@ void FileBrowser::set_on_file_open(void (*func)(std::string)) {
     on_file_open = func;
 }
 
+void FileBrowser::set_current_dir(const std::string &dir) {
+    if(dir[0] != '/')
+        cur_dir = "/" + dir;
+    else
+        cur_dir = dir;
+
+    if(cur_dir.back() != '/')
+        cur_dir += "/";
+
+    update_list();
+}
+
 void FileBrowser::update_list() {
     title = cur_dir;
 
