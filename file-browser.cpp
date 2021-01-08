@@ -80,6 +80,9 @@ void FileBrowser::update_list() {
 
     // filter by extensions
     files.erase(std::remove_if(files.begin(), files.end(), [this](const blit::FileInfo &f) {
+        if(f.name[0] == '.')
+            return true;
+
         if(!(f.flags & blit::FileFlags::directory)) {
             std::string ext;
             auto dotPos = f.name.find_last_of('.');
