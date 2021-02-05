@@ -230,9 +230,8 @@ void MP3Stream::play(int channel)
     }
 
     blit::channels[channel].waveforms = blit::Waveform::WAVE;
-    blit::channels[channel].volume = 0xFF;
-    blit::channels[channel].wave_callback_arg = this;
-    blit::channels[channel].callback_waveBufferRefresh = &MP3Stream::staticCallback;
+    blit::channels[channel].user_data = this;
+    blit::channels[channel].wave_buffer_callback = &MP3Stream::staticCallback;
 
     //blit::channels[channel].trigger_attack();
     blit::channels[channel].adsr = 0xFFFF00;
@@ -367,16 +366,16 @@ void MP3Stream::decode(int bufIndex)
     dataSize[bufIndex] = samples;
 }
 
-void MP3Stream::staticCallback(void *arg)
+void MP3Stream::staticCallback(blit::AudioChannel &channel)
 {
-    reinterpret_cast<MP3Stream *>(arg)->callback();
+    reinterpret_cast<MP3Stream *>(channel.user_data)->callback(channel);
 }
 
-void MP3Stream::callback()
+void MP3Stream::callback(blit::AudioChannel &channel)
 {
     if(!currentSample)
     {
-        blit::channels[channel].off();
+        channel.off();
         return;
     }
 
@@ -390,12 +389,12 @@ void MP3Stream::callback()
         }
         else
         {
-            memset(blit::channels[channel].wave_buffer, 0, 64 * sizeof(int16_t));
+            memset(channel.wave_buffer, 0, 64 * sizeof(int16_t));
             return;
         }
     }
 
-    auto out = blit::channels[channel].wave_buffer;
+    auto out = channel.wave_buffer;
 
     int i = 0;
     for(; i < 64 /*&& currentSample != endSample*/; i++)

@@ -2,6 +2,7 @@
 
 #include <string>
 
+#include "audio/audio.hpp"
 #include "engine/file.hpp"
 
 #include "music-stream.hpp"
@@ -37,8 +38,8 @@ private:
 
     void read(int32_t len);
 
-    static void staticCallback(void *arg);
-    void callback();
+    static void staticCallback(blit::AudioChannel &channel);
+    void callback(blit::AudioChannel &channel);
 
     // file io
     blit::File file;

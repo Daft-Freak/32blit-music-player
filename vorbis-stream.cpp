@@ -130,9 +130,8 @@ void VorbisStream::play(int channel)
     }
 
     blit::channels[channel].waveforms = blit::Waveform::WAVE;
-    blit::channels[channel].volume = 0xFF;
-    blit::channels[channel].wave_callback_arg = this;
-    blit::channels[channel].callback_waveBufferRefresh = &VorbisStream::staticCallback;
+    blit::channels[channel].user_data  = this;
+    blit::channels[channel].wave_buffer_callback = &VorbisStream::staticCallback;
 
     //blit::channels[channel].trigger_attack();
     blit::channels[channel].adsr = 0xFFFF00;
@@ -237,16 +236,16 @@ void VorbisStream::decode(int bufIndex)
     dataSize[bufIndex] = samples;
 }
 
-void VorbisStream::staticCallback(void *arg)
+void VorbisStream::staticCallback(blit::AudioChannel &channel)
 {
-    reinterpret_cast<VorbisStream *>(arg)->callback();
+    reinterpret_cast<VorbisStream *>(channel.user_data)->callback(channel);
 }
 
-void VorbisStream::callback()
+void VorbisStream::callback(blit::AudioChannel &channel)
 {
     if(!currentSample)
     {
-        blit::channels[channel].off();
+        channel.off();
         return;
     }
 
@@ -260,12 +259,12 @@ void VorbisStream::callback()
         }
         else
         {
-            memset(blit::channels[channel].wave_buffer, 0, 64 * sizeof(int16_t));
+            memset(channel.wave_buffer, 0, 64 * sizeof(int16_t));
             return;
         }
     }
 
-    auto out = blit::channels[channel].wave_buffer;
+    auto out = channel.wave_buffer;
 
     int i = 0;
     for(; i < 64; i++)

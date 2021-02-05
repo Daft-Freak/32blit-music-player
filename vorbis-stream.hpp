@@ -2,7 +2,9 @@
 
 #include <string>
 
+#include "audio/audio.hpp"
 #include "engine/file.hpp"
+
 #include "music-stream.hpp"
 #include "music-tags.hpp"
 
@@ -37,8 +39,8 @@ private:
     void decode(int bufIndex);
     uint64_t calcDuration(std::string filename);
 
-    static void staticCallback(void *arg);
-    void callback();
+    static void staticCallback(blit::AudioChannel &channel);
+    void callback(blit::AudioChannel &channel);
 
     int channel = -1;
 
