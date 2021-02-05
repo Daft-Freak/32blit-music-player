@@ -5,7 +5,7 @@ splash:
   file: assets/splash.png
 icon:
   file: assets/icon.png
-version: v0.7.0
+version: v0.8.0
 category: media player
 url: https://github.com/Daft-Freak/32blit-music-player
 filetypes: ["mp3", "oga"]
