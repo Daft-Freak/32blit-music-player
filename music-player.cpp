@@ -21,7 +21,7 @@ VorbisStream vorbisStream;
 MusicStream *musicStream;
 
 const blit::Font tallFont(asset_tall_font);
-FileBrowser fileBrowser(tallFont);
+duh::FileBrowser fileBrowser(tallFont);
 
 std::string fileToLoad;
 bool renderedLoadMessage = false;
@@ -157,7 +157,7 @@ void render(uint32_t time_ms)
     std::string playPauseLabel = musicStream->getPlaying() ? "Pause" : "Play";
     auto labelLen = blit::screen.measure_text(playPauseLabel, tallFont).w;
     blit::screen.text(playPauseLabel, tallFont, infoRect, true, blit::top_right);
-    controlIcons.render(ControlIcons::Icon::X, infoRect.tr() - blit::Point(labelLen + 12 + 2, 0));
+    duh::draw_control_icon(&blit::screen, duh::Icon::X, infoRect.tr() - blit::Point(labelLen + 12 + 2, 0));
 
     //
     //blit::screen.text(std::to_string(initTime) + " " + std::to_string(dataSize[0]), blit::minimal_font, blit::Point(0));
