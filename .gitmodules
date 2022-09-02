@@ -1,3 +1,6 @@
 [submodule "DUH"]
 	path = DUH
 	url = https://github.com/Daft-Freak/DUH
+[submodule "libvgm"]
+	path = libvgm
+	url = https://github.com/ValleyBell/libvgm
