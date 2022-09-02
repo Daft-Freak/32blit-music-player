@@ -4,6 +4,7 @@
 #include "control-icons.hpp"
 #include "file-browser.hpp"
 #include "mp3-stream.hpp"
+#include "vgm-stream.hpp"
 #include "vorbis-stream.hpp"
 
 #ifdef PROFILER
@@ -17,6 +18,7 @@ blit::ProfilerProbe *profilerDecProbe;
 #endif
 
 MP3Stream mp3Stream;
+VGMStream vgmStream;
 VorbisStream vorbisStream;
 MusicStream *musicStream;
 
@@ -184,6 +186,8 @@ void update(uint32_t time_ms)
             musicStream = &mp3Stream;
         else if((ext == ".ogg" || ext == ".oga") && vorbisStream.load(fileToLoad))
             musicStream = &vorbisStream;
+        else if(ext == ".vgm" && vgmStream.load(fileToLoad))
+            musicStream = &vgmStream;
         else
             musicStream = nullptr;
 

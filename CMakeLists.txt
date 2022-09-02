@@ -6,6 +6,7 @@ project(music-player)
 set(PROJECT_SOURCE
     mp3-stream.cpp
     music-player.cpp
+    vgm-stream.cpp
     vorbis-stream.cpp
 )
 set(PROJECT_DISTRIBS LICENSE README.md)
