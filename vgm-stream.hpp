@@ -8,6 +8,9 @@
 #include "music-stream.hpp"
 #include "music-tags.hpp"
 
+typedef struct _data_loader DATA_LOADER;
+class PlayerA;
+
 class VGMStream final : public MusicStream
 {
 public:
@@ -38,11 +41,10 @@ private:
 
     int channel = -1;
 
-    //stb_vorbis *vorbis;
-    unsigned int channels, sampleRate;
-    bool needConvert = false;
+    PlayerA *player;
+    DATA_LOADER *loader = nullptr;
 
-    static const int audioBufSize = 1024 * 4;
+    static const int audioBufSize = 1024;
     int16_t audioBuf[2][audioBufSize];
     int16_t *currentSample = nullptr, *endSample = nullptr;
     int dataSize[2]{};
@@ -52,6 +54,4 @@ private:
     int durationMs = 0;
 
     MusicTags tags;
-
-    bool supported = true;
 };
