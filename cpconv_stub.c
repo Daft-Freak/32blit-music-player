@@ -8,6 +8,7 @@
 
 struct _codepage_conversion
 {
+    int res;
 };
 
 UINT8 CPConv_Init(CPCONV** retCPC, const char* cpFrom, const char* cpTo)
