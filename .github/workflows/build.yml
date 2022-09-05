@@ -34,11 +34,11 @@ jobs:
             cmake-args: -DCMAKE_TOOLCHAIN_FILE=$GITHUB_WORKSPACE/32blit-sdk/32blit.toolchain
             apt-packages: gcc-arm-none-eabi libnewlib-arm-none-eabi libstdc++-arm-none-eabi-newlib python3-setuptools
 
-          - os: macos-latest
-            name: macOS
-            #release-suffix: MACOS
-            cmake-args: -D32BLIT_DIR=$GITHUB_WORKSPACE/32blit-sdk
-            brew-packages: sdl2 sdl2_image sdl2_net
+          #- os: macos-latest
+          #  name: macOS
+          #  #release-suffix: MACOS
+          #  cmake-args: -D32BLIT_DIR=$GITHUB_WORKSPACE/32blit-sdk
+          #  brew-packages: sdl2 sdl2_image sdl2_net
 
           - os: windows-latest
             name: Visual Studio
