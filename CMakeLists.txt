@@ -31,14 +31,24 @@ set(LIBVGM_SOURCE_DIR ${CMAKE_CURRENT_SOURCE_DIR}/libvgm)
 
 add_definitions("-D HAVE_STDINT_H")
 
-set(DISABLED_WARNINGS
-    -Wno-double-promotion
-    -Wno-sign-compare
-    -Wno-type-limits
-    -Wno-unused-but-set-variable
-    -Wno-unused-function
-    -Wno-unused-variable
-)
+if(MSVC)
+    set(DISABLED_WARNINGS)
+    set(DISABLED_WARNINGS_C)
+else()
+    set(DISABLED_WARNINGS
+        -Wno-double-promotion
+        -Wno-sign-compare
+        -Wno-type-limits
+        -Wno-unused-but-set-variable
+        -Wno-unused-function
+        -Wno-unused-variable
+    )
+
+    set(DISABLED_WARNINGS_C
+        ${DISABLED_WARNINGS}
+        -Wno-incompatible-pointer-types
+    )
+endif()
 
 set(SNDEMU__ALL OFF)
 set(SNDEMU_SN76496_ALL ON)
@@ -93,7 +103,7 @@ add_subdirectory(libvgm/emu EXCLUDE_FROM_ALL)
 add_subdirectory(libvgm/player EXCLUDE_FROM_ALL)
 add_library(vgm-utils STATIC libvgm/utils/DataLoader.c cpconv_stub.c)
 
-target_compile_options(vgm-emu PRIVATE ${DISABLED_WARNINGS} -Wno-incompatible-pointer-types)
+target_compile_options(vgm-emu PRIVATE ${DISABLED_WARNINGS_C})
 target_compile_options(vgm-player PRIVATE ${DISABLED_WARNINGS})
 
 # executable
